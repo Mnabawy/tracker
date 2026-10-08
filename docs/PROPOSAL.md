@@ -1,6 +1,10 @@
 # Daily Tracker — Data model & folder structure (proposal)
 
-Status: **awaiting approval**. Nothing is built yet.
+Status: **approved** with the proposed defaults (Gregorian month board, Arabic-Indic digits,
+½ breaks a streak, day starts at 03:00).
+
+Build progress: data layer ✅ · Today ⏳ · Add/Edit task · Month board · Progress · Settings ·
+reminders · PDF export
 
 Target stack: Expo SDK 57 (React Native 0.86, React 19.2), TypeScript, Expo Router,
 expo-sqlite. Arabic-first, forced RTL, light + dark.
@@ -52,7 +56,6 @@ CREATE TABLE tasks (
 -- Effective-dated rules: the rule in force on day D is the row with the
 -- greatest effective_from <= D. The first row's effective_from = start_date.
 CREATE TABLE task_rules (
-  id             TEXT PRIMARY KEY,
   task_id        TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
   effective_from TEXT NOT NULL,          -- 'YYYY-MM-DD'
   tracking_type  TEXT NOT NULL CHECK (tracking_type IN ('binary','count','duration')),
@@ -61,13 +64,13 @@ CREATE TABLE task_rules (
   schedule_type  TEXT NOT NULL CHECK (schedule_type IN ('daily','weekdays','hijri_days','weekly_quota')),
   schedule_days  TEXT,                   -- JSON: weekdays [1,4] (0=Sun…6=Sat) or Hijri days [13,14,15]
   weekly_quota   INTEGER,                -- for 'weekly_quota' only, 1..7
-  UNIQUE (task_id, effective_from)
+  PRIMARY KEY (task_id, effective_from)
 );
 
 CREATE TABLE entries (
   task_id    TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
   date       TEXT NOT NULL,              -- 'YYYY-MM-DD' (tracking day)
-  value      REAL NOT NULL,              -- binary: 0.5 | 1 ; count: n ; duration: minutes
+  value      REAL NOT NULL CHECK (value > 0), -- binary: 0.5 | 1 ; count: n ; duration: minutes
   updated_at TEXT NOT NULL,
   PRIMARY KEY (task_id, date)
 );
@@ -167,7 +170,9 @@ These are the rules everything else depends on, so they're worth checking.
 
 ### 2.4 Seed (first launch)
 
-The 8 default tasks are inserted in order. Each is `binary`, `daily`, and starts today:
+The 8 default tasks are inserted in order. Each is `binary` and `daily`, and starts on the 1st of the
+current month, so days already ticked on the paper board can be filled in (until they are, those
+days count as missed in this month's %; move the start date in the task editor to change that):
 الصلاة، الضحى، النوافل ١٢ ركعة، الشفع والوتر، القرآن، الأذكار، العلم الشرعي، علم الخلافة.
 They're ordinary rows after seeding, so they're fully editable, archivable and deletable.
 
@@ -216,15 +221,18 @@ src/
     schedule.ts                       # ruleAt(task, d), isScheduled(task, d)
     scoring.ts                        # cell ratio/status, day score, cycle()
     stats.ts                          # month totals, streaks, best day, weakest, 3-month
-    templates.ts                      # صيام الإثنين والخميس، أيام البيض، قيام الليل، …
-    defaults.ts                       # the 8 seed tasks
+    rules.ts                          # rule versioning: normalize, apply edit "from today" / "all"
+    validation.ts                     # task draft validation (form + backup import)
+    templates.ts                      # the 8 seed tasks + one-tap templates
   db/
     client.ts                         # open DB, PRAGMA foreign_keys/journal_mode
     migrations.ts                     # versioned SQL via user_version
     seed.ts
-    repo/                             # typed queries: tasks, entries, notes, settings
+    database.ts                       # driver interface, transactions, change notifications
+    rows.ts                           # row types and row ↔ domain mapping
+    repo/                             # typed queries: tasks, entries, categories, notes, settings
     backup.ts                         # export/import JSON, validation
-    useLive.ts                        # hook: re-run a query when the DB changes
+    react.tsx                         # DbProvider, useLive (re-runs a query when the DB changes)
   features/                           # screen-specific components and hooks
     today/                            # TaskRow, Stepper, DayHeader, DaySwitcher
     task-form/                        # TaskForm, TrackingPicker, SchedulePicker, …
