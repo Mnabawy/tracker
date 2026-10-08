@@ -1,14 +1,14 @@
 # Daily Tracker
 
-A personal, offline, Arabic-first (RTL) daily Islamic habit tracker that replaces a printed 30-day
-wall board. Built with Expo SDK 57, React Native, TypeScript, Expo Router and expo-sqlite.
+A personal, offline, Arabic-first (RTL) daily Islamic habit tracker for iOS and Android that
+replaces a printed 30-day wall board. Built with Expo SDK 57, React Native, TypeScript, Expo Router and expo-sqlite.
 
 The design (data model, scoring rules, folder layout) is in [`docs/PROPOSAL.md`](docs/PROPOSAL.md).
 
 ## Run it on your phone
 
 ```bash
-npm install          # also applies patches/ (see below)
+npm install
 npx expo start
 ```
 
@@ -21,14 +21,10 @@ layout to right-to-left; native builds are RTL from the start (`forcesRTL` in `a
 |---------|--------------|
 | `npm run check` | typecheck + lint + unit tests |
 | `npm test` | Jest unit tests (`src/domain`, `src/db` against an in-memory SQLite) |
-| `npm run web:preview` | static web build served with the headers expo-sqlite needs, for layout checks |
 
 ## Notes
 
-- **`patches/expo-sqlite+57.0.4.patch`** fixes an upstream bug in expo-sqlite's *web* worker: the
-  length of a synchronous result was written into a byte array, keeping only its low byte, so any
-  result over 255 bytes (e.g. a few Arabic task names) was truncated. iOS and Android are not
-  affected. Still present in 58.0.10; drop the patch once fixed upstream.
+- Mobile only: iOS and Android (`platforms` in `app.json`). There is no web version.
 - `app/index.tsx` is a temporary data-layer check screen; it is replaced by the Today tab.
 
 ## On-device check (current step: data layer)

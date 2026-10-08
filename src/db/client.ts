@@ -1,5 +1,4 @@
 import { openDatabaseAsync } from 'expo-sqlite';
-import { Platform } from 'react-native';
 
 import { Database, type SqlDriver } from './database';
 import { migrate } from './migrations';
@@ -7,15 +6,13 @@ import { migrate } from './migrations';
 export const DB_NAME = 'tracker.db';
 
 /**
- * Opens the on-device database and brings its schema up to date.
- *
- * Opening is async so that on web the SQLite worker (WebAssembly) is fully
- * loaded before the first synchronous query; after that, queries are sync.
+ * Opens the on-device database and brings its schema up to date. Opening is
+ * async so app start-up doesn't block the JS thread; queries after that are
+ * synchronous (they are small and fast).
  */
 export async function openAppDatabase(name: string = DB_NAME): Promise<Database> {
   const sqlite = await openDatabaseAsync(name);
-  await sqlite.execAsync('PRAGMA foreign_keys = ON');
-  if (Platform.OS !== 'web') await sqlite.execAsync('PRAGMA journal_mode = WAL');
+  await sqlite.execAsync('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;');
 
   const driver: SqlDriver = {
     exec: (sql) => sqlite.execSync(sql),

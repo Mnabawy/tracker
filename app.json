@@ -4,6 +4,10 @@
     "slug": "daily-tracker",
     "scheme": "dailytracker",
     "version": "1.0.0",
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -18,11 +22,6 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
-    },
-    "web": {
-      "favicon": "./assets/favicon.png",
-      "output": "single",
-      "bundler": "metro"
     },
     "plugins": [
       "expo-router",

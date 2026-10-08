@@ -298,9 +298,10 @@ The build environment is a Linux cloud container with no hardware virtualization
 - **iOS simulator**: not possible here at all, because it needs macOS.
 - **Android emulator**: not practical here, because there is no KVM.
 
+The app is mobile-only (iOS and Android); there is no web version.
+
 What I'll do at each step:
-1. TypeScript strict type-check, lint, and Jest unit tests for all of `src/domain`.
+1. TypeScript strict type-check, lint, and Jest unit tests for `src/domain` and `src/db`.
 2. `expo export --platform ios` and `--platform android`, which proves both native bundles compile.
-3. Run the app on react-native-web in headless Chromium with RTL forced. I'll screenshot every screen in light and dark mode at phone size and share them for layout review.
 
 The on-device check is yours: `npx expo start` and scan the QR code with Expo Go on your phone. I'll write down exactly what to check for each step. If you have an Expo account, I can also set up EAS preview builds.
